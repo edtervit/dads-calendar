@@ -1,7 +1,7 @@
 import type {Race} from '@prisma/client';
 import React, {useEffect, useState} from 'react'
-import {groupRacesByCourseAndSortByTime} from '../../utils/racesUtils';
-import {trpc} from '../../utils/trpc';
+import {groupRacesByCourseAndSortByTime} from '../utils/racesUtils';
+import {trpc} from '../utils/trpc';
 import RaceItem from './race';
 import LoadingSpinner from './resuable/loadingSpinner';
 

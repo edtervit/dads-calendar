@@ -1,7 +1,7 @@
 import type {Race} from '@prisma/client'
 import {useSession} from 'next-auth/react';
 import React from 'react'
-import {trpc} from '../../utils/trpc';
+import {trpc} from '../utils/trpc';
 import StarRating from './starRating';
 
 interface props {

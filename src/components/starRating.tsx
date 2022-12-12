@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import React, {useState} from 'react'
-import {trpc} from '../../utils/trpc';
+import {trpc} from '../utils/trpc';
 
 interface props {
   raceRating: number | null;

@@ -5,7 +5,7 @@ import {signIn, signOut, useSession} from "next-auth/react";
 import {trpc} from "../utils/trpc";
 import Datepicker from "react-tailwindcss-datepicker";
 import {useState} from "react";
-import Races from "./components/races";
+import Races from "../components/races";
 
 const Home: NextPage = () => {
 
