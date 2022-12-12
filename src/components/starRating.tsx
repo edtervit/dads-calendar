@@ -17,10 +17,20 @@ function StarRating({ raceRating, winnerRating, raceId, isAdmin}: props) {
 
 
   const handleStarUpdate = async (newRating: number, type: "winner" | "race") => {
-    if (newRating === starRace) {
+    if (newRating === starRace && type === 'race') {
       const setNullRes = await updateStarInDb.mutateAsync({rating: null, raceId, type})
       if (setNullRes.success) {
-        type === 'race' ? setStarRace(null) : setStarWinner(null)
+        setStarRace(null) 
+      } else {
+        alert('There was an error saving your rating')
+        console.error(setNullRes.error)
+      }
+    }
+    
+    if (newRating === starWinner && type === 'winner') {
+      const setNullRes = await updateStarInDb.mutateAsync({rating: null, raceId, type})
+      if (setNullRes.success) {
+        setStarWinner(null)
       } else {
         alert('There was an error saving your rating')
         console.error(setNullRes.error)
