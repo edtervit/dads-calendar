@@ -17,30 +17,21 @@ function StarRating({ raceRating, winnerRating, raceId, isAdmin}: props) {
 
 
   const handleStarUpdate = async (newRating: number, type: "winner" | "race") => {
-    if (newRating === starRace && type === 'race') {
+
+    if ((newRating === starWinner && type === 'winner') || (newRating === starRace && type === 'race')) {
       const setNullRes = await updateStarInDb.mutateAsync({rating: null, raceId, type})
       if (setNullRes.success) {
-        setStarRace(null) 
-      } else {
-        alert('There was an error saving your rating')
-        console.error(setNullRes.error)
-      }
-    }
-    
-    if (newRating === starWinner && type === 'winner') {
-      const setNullRes = await updateStarInDb.mutateAsync({rating: null, raceId, type})
-      if (setNullRes.success) {
-        setStarWinner(null)
+        type === 'winner' ? setStarWinner(null) : setStarRace(null)
       } else {
         alert('There was an error saving your rating')
         console.error(setNullRes.error)
       }
     }
 
-    if (newRating !== starRace) {
+    if ((newRating !== starWinner && type === 'winner') || (newRating !== starRace && type === 'race')) {
       const setStarRes = await updateStarInDb.mutateAsync({rating: newRating, raceId, type})
       if (setStarRes.success) {
-        type === 'race' ? setStarRace(newRating) : setStarWinner(newRating)
+        type === 'winner' ? setStarWinner(newRating) : setStarRace(newRating)
       } else {
         alert('There was an error saving your rating')
         console.error(setStarRes.error)
