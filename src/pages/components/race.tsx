@@ -1,4 +1,4 @@
-import {Race} from '@prisma/client'
+import type {Race} from '@prisma/client'
 import {useSession} from 'next-auth/react';
 import React from 'react'
 import {trpc} from '../../utils/trpc';

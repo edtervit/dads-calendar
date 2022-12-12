@@ -1,5 +1,4 @@
 import {z} from "zod";
-import jsonExample from './exampleRes.json' assert {type: "json"};
 
 import {router, publicProcedure, protectedProcedure} from "../trpc";
 import {env} from "../../../env/server.mjs";
@@ -51,7 +50,6 @@ export const raceRouter = router({
         const response = await fetch(`https://horse-racing.p.rapidapi.com/racecards?date=${input}`, options);
         const json = await response.json();
 
-        // const json = jsonExample.data
         interface raceRes {
           date: string
           course: string
@@ -129,13 +127,7 @@ export const raceRouter = router({
           success: false,
           error: [err, 'Error getting races for this date, maybe the API has maxed out for the day. 50 new dates per day.'],
         }
-
-
       }
-      //return the races from the database
-
-      // return 'No races for this date'
-
     }),
   updateRating: protectedProcedure
     .input(z.object({

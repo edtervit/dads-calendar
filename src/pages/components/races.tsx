@@ -1,4 +1,4 @@
-import {Race} from '@prisma/client';
+import type {Race} from '@prisma/client';
 import React, {useEffect, useState} from 'react'
 import {groupRacesByCourseAndSortByTime} from '../../utils/racesUtils';
 import {trpc} from '../../utils/trpc';
@@ -23,13 +23,11 @@ function Races({date}: props) {
   //useEffect to call getRace on date change
   useEffect(() => {
     refetchRaces()
-  }, [date])
+  }, [date, refetchRaces])
 
   //useEffect to log raceData
   useEffect(() => {
-    console.log(raceData)
     if(raceData?.success && raceData.data){
-      console.log(groupRacesByCourseAndSortByTime(raceData.data))
       setFormattedRaces(groupRacesByCourseAndSortByTime(raceData.data))
     } else {
       setFormattedRaces([])

@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import React, {useState} from 'react'
 import {trpc} from '../../utils/trpc';
 
@@ -22,7 +23,7 @@ function StarRating({ raceRating, winnerRating, raceId, isAdmin}: props) {
         type === 'race' ? setStarRace(null) : setStarWinner(null)
       } else {
         alert('There was an error saving your rating')
-        console.log(setNullRes.error)
+        console.error(setNullRes.error)
       }
     }
 
@@ -32,7 +33,7 @@ function StarRating({ raceRating, winnerRating, raceId, isAdmin}: props) {
         type === 'race' ? setStarRace(newRating) : setStarWinner(newRating)
       } else {
         alert('There was an error saving your rating')
-        console.log(setStarRes.error)
+        console.error(setStarRes.error)
       }
     }
   }
@@ -40,14 +41,26 @@ function StarRating({ raceRating, winnerRating, raceId, isAdmin}: props) {
   //if user isn't an admin, return a read only star rating
   if (!isAdmin) {
     return (
+      <>
       <div className='flex justify-center gap-1'>
+        W
         {[1, 2, 3, 4, 5].map((star) => (
           //if rating is greater than or equal to the star number, return a filled star
           <div className='w-5' key={star}>
-            {starRace && starRace >= star ? <img src="star-filled.svg" alt="" /> : <img src="star.svg" alt="" />}
+            {starWinner && starWinner >= star ? <Image width={20} height={20} src="/star-filled.svg" alt="star" /> : <Image width={20} height={20} src="/star.svg" alt="star" />}
           </div>
         ))}
       </div>
+      <div className='flex justify-center gap-1'>
+        R
+        {[1, 2, 3, 4, 5].map((star) => (
+          //if rating is greater than or equal to the star number, return a filled star
+          <div className='w-5' key={star}>
+            {starRace && starRace >= star ? <Image width={20} height={20} src="/star-filled.svg" alt="star" /> : <Image width={20} height={20} src="/star.svg" alt="star" />}
+          </div>
+        ))}
+      </div>
+      </>
     )
   } else {
     return (
@@ -57,7 +70,7 @@ function StarRating({ raceRating, winnerRating, raceId, isAdmin}: props) {
         {[1, 2, 3, 4, 5].map((star) => (
           //if rating is greater than or equal to the star number, return a filled star
           <div className='w-5 cursor-pointer' key={star} onClick={() => handleStarUpdate(star, 'winner')}>
-            {starWinner && starWinner >= star ? <img src="star-filled.svg" alt="" /> : <img src="star.svg" alt="" />}
+            {starWinner && starWinner >= star ? <Image width={20} height={20} src="/star-filled.svg" alt="star" /> : <Image width={20} height={20} src="/star.svg" alt="star" />}
           </div>
         ))}
       </div>
@@ -66,7 +79,7 @@ function StarRating({ raceRating, winnerRating, raceId, isAdmin}: props) {
         {[1, 2, 3, 4, 5].map((star) => (
           //if rating is greater than or equal to the star number, return a filled star
           <div className='w-5 cursor-pointer' key={star} onClick={() => handleStarUpdate(star, 'race')}>
-            {starRace && starRace >= star ? <img src="star-filled.svg" alt="" /> : <img src="star.svg" alt="" />}
+            {starRace && starRace >= star ? <Image width={20} height={20} src="/star-filled.svg" alt="star" /> : <Image width={20} height={20} src="/star.svg" alt="star" />}
           </div>
         ))}
       </div>

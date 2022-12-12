@@ -8,53 +8,54 @@ import {useState} from "react";
 import Races from "./components/races";
 
 const Home: NextPage = () => {
+
+
   const [date, setDate] = useState<{startDate: string | Date | null; endDate: string | Date | null;} | null>({
     //formatting date to YYYY-MM-DD
-    startDate: new Date()?.toISOString().split("T")[0]!.slice(0, 10),
-    endDate: new Date().toISOString().split("T")[0]!.slice(0, 10),
+    startDate: new Date().toISOString().split("T")[0]?.slice(0, 10) ?? null,
+    endDate: new Date().toISOString().split("T")[0]?.slice(0, 10) ?? null,
   });
   const handleDateChange = (newValue: {startDate: string | Date | null; endDate: string | Date | null;} | null) => {
-    console.log("newValue:", newValue);
     if (!newValue) return;
     //check if newValue.startDate is in the future
-    if (newValue.startDate && new Date(newValue.startDate) > new Date()){
+    if (newValue.startDate && new Date(newValue.startDate) > new Date()) {
       alert("You can't select a date in the future")
       return;
-    } 
+    }
     setDate(newValue);
   }
   const {data: sessionData} = useSession();
 
-return (
-  <>
-    <Head>
-      <title>Ned's Racing Calendar</title>
-      <meta name="description" content="Ned's Racing Calendar" />
-      <link rel="icon" href="/favi.png" />
-    </Head>
-    <main className="flex min-h-screen flex-col items-center  bg-gradient-to-b from-[#6d0202] to-[#2c1515] text-white">
-      <div className="container flex flex-col items-center justify-center gap-4 px-4 pt-16 pb-4">
-        <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-          <span className="text-[hsl(0,100%,70%)]"> Ned's </span>Racing Calendar
-        </h1>
-        <Auth />
-        {sessionData && (
-          <div className="flex justify-center flex-col items-center">
-            <Datepicker
-              value={date}
-              asSingle={true}
-              useRange={false}
-              primaryColor={"red"}
-              onChange={handleDateChange}
-            />
-          </div>
-        )}
-      </div>
-      {date && typeof date.startDate === 'string' && <Races date={date.startDate} />}
-    </main>
-  </>
-);
-  };
+  return (
+    <>
+      <Head>
+        <title>Ned&apos;s Racing Calendar</title>
+        <meta name="description" content="Ned's Racing Calendar" />
+        <link rel="icon" href="/favi.png" />
+      </Head>
+      <main className="flex min-h-screen flex-col items-center  bg-gradient-to-b from-[#6d0202] to-[#2c1515] text-white">
+        <div className="container flex flex-col items-center justify-center gap-4 px-4 pt-16 pb-4">
+          <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
+            <span className="text-[hsl(0,100%,70%)]"> Ned&apos;s </span>Racing Calendar
+          </h1>
+          <Auth />
+          {sessionData && (
+            <div className="flex justify-center flex-col items-center">
+              <Datepicker
+                value={date}
+                asSingle={true}
+                useRange={false}
+                primaryColor={"red"}
+                onChange={handleDateChange}
+              />
+            </div>
+          )}
+        </div>
+        {sessionData && date && typeof date.startDate === 'string' && <Races date={date.startDate} />}
+      </main>
+    </>
+  );
+};
 
 export default Home;
 

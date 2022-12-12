@@ -1,10 +1,10 @@
-import {Race} from "@prisma/client";
+import type {Race} from "@prisma/client";
 
-export const groupRacesByCourseAndSortByTime = (raceData: ((Race & { course: { name: string; }; }) | null)[]) => {
+export const groupRacesByCourseAndSortByTime = (raceData: ((Race & {course: {name: string;};}) | null)[]) => {
   const groupedRaces: {course: string, races: Race[]}[] = [];
   raceData.forEach(race => {
     //if the race is somehow null, just skip it.
-    if(!race) return;
+    if (!race) return;
     //check if course.name is already in groupedRaces
     const courseIndex = groupedRaces.findIndex(groupedRace => groupedRace.course.toLowerCase() === race.course.name.toLowerCase());
     //if it is, push
@@ -17,15 +17,18 @@ export const groupRacesByCourseAndSortByTime = (raceData: ((Race & { course: { n
         course: race.course.name,
         races: [race]
       });
-    } 
+    }
   });
   groupedRaces.forEach(group => {
     group.races.sort((a, b) => {
       const aTime = a.time.split(":");
       const bTime = b.time.split(":");
-      const aSeconds = parseInt(aTime[0]!) * 60 + parseInt(aTime[1]!);
-      const bSeconds = parseInt(bTime[0]!) * 60 + parseInt(bTime[1]!);
-      return aSeconds - bSeconds;
+      if (aTime[0] !== undefined && aTime[1] !== undefined && bTime[0] !== undefined && bTime[1] !== undefined) {
+        const aSeconds = parseInt(aTime[0]) * 60 + parseInt(aTime[1]);
+        const bSeconds = parseInt(bTime[0]) * 60 + parseInt(bTime[1]);
+        return aSeconds - bSeconds;
+      } else
+        return 0;
     }
     )
   })
