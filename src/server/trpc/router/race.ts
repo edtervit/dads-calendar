@@ -136,6 +136,7 @@ export const raceRouter = router({
       type: z.enum(['winner', 'race'])
     }))
     .mutation(async ({ctx, input}) => {
+      
       if (ctx.session.user.email && !env.ADMIN_EMAIL.split(", ").includes(ctx.session.user.email)) return {
         success: false,
         error: ['Only admins can update ratings.']
