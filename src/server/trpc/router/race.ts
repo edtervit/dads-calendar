@@ -12,13 +12,13 @@ export const raceRouter = router({
       };
     }),
   getRaces: protectedProcedure
-    .input(z.string())
+    .input(z.object({date: z.string(), forceGetRaces: z.boolean().default(false)}))
     .query(async ({ctx, input}) => {
       //MAX 50 CALLS PERS DAY TO API
       //first check the database if we have races for that date, if we do return them
       const racesWeHave = await ctx.prisma.race.findMany({
         where: {
-          date: input,
+          date: input.date,
         },
         include: {
           course: {
@@ -29,7 +29,7 @@ export const raceRouter = router({
         }
       });
 
-      if (racesWeHave.length > 0) return {data: racesWeHave, success: true, error: null}
+      if (racesWeHave.length > 0 && !input.forceGetRaces) return {data: racesWeHave, success: true, error: null}
 
       //if the user isn't an admin, return an error to avoid non-admins wasting the API calls
       if (ctx.session.user.email && !env.ADMIN_EMAIL.split(", ").includes(ctx.session.user.email)) return {
@@ -43,12 +43,22 @@ export const raceRouter = router({
         const options = {
           method: 'GET',
           headers: {
-            'X-RapidAPI-Key': 'baa2311211msh2d26d7befb60161p1bea14jsnef4a4c0ce048',
+            'X-RapidAPI-Key': '6c4697054amsha0184f604b79a55p14e100jsn7c252c0e24f6',
             'X-RapidAPI-Host': 'horse-racing.p.rapidapi.com'
           }
         };
-        const response = await fetch(`https://horse-racing.p.rapidapi.com/racecards?date=${input}`, options);
+        const response = await fetch(`https://horse-racing.p.rapidapi.com/racecards?date=${input.date}`, options);
+        const requestsRemaining =  response.headers.get('x-ratelimit-requests-remaining');
         const json = await response.json();
+
+        //api will return a message if there's an error
+        if (json.message) {
+          return {
+            data: null,
+            success: false,
+            error: [json.message, 'Error getting races for this date, maybe the API has maxed out for the day. 50 new dates per day.'],
+          }
+        }
 
         interface raceRes {
           date: string
@@ -120,7 +130,7 @@ export const raceRouter = router({
           return null;
         }))
 
-        return {data: races, success: true, error: null}
+        return {data: races, success: true, error: null, requestsRemaining}
       } catch (err) {
         return {
           data: null,
@@ -136,13 +146,13 @@ export const raceRouter = router({
       type: z.enum(['winner', 'race'])
     }))
     .mutation(async ({ctx, input}) => {
-      
+
       if (ctx.session.user.email && !env.ADMIN_EMAIL.split(", ").includes(ctx.session.user.email)) return {
         success: false,
         error: ['Only admins can update ratings.']
       }
       try {
-        if(input.type === 'winner'){
+        if (input.type === 'winner') {
           await ctx.prisma.race.update({
             where: {
               id: input.raceId
