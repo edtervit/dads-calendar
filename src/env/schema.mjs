@@ -26,6 +26,7 @@ export const serverSchema = z.object({
   CLOUDINARY_SECRET_API_KEY: z.string(),
   //comma seperate list of emails e.g ADMIN_EMAIL: "email1, email2"
   ADMIN_EMAIL: z.string(),
+  RAPID_API_KEY: z.string(),
 });
 
 /**

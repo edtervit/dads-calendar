@@ -6,14 +6,11 @@ import StarRating from './starRating';
 
 interface props {
   race: Race
+  isAdmin: boolean;
 }
 
-function RaceItem({race}: props) {
-  const {data: sessionData} = useSession();
-  const {data: isAdmin} = trpc.auth.checkIfAdmin.useQuery(
-    undefined, // no input
-    {enabled: sessionData?.user !== undefined},
-  );
+function RaceItem({race, isAdmin}: props) {
+
   return (
     <div className='border-white border mb-4 p-2'>
       <div className='mb-1'>

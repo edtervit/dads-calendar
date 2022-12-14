@@ -43,13 +43,32 @@ export const raceRouter = router({
         const options = {
           method: 'GET',
           headers: {
-            'X-RapidAPI-Key': '6c4697054amsha0184f604b79a55p14e100jsn7c252c0e24f6',
+            'X-RapidAPI-Key': env.RAPID_API_KEY,
             'X-RapidAPI-Host': 'horse-racing.p.rapidapi.com'
           }
         };
         const response = await fetch(`https://horse-racing.p.rapidapi.com/racecards?date=${input.date}`, options);
-        const requestsRemaining =  response.headers.get('x-ratelimit-requests-remaining');
+
         const json = await response.json();
+
+        //handle storing rate limit in database
+        const requestsRemaining = response.headers.get('x-ratelimit-requests-remaining');
+        const todaysDate = new Date().toISOString().split("T")[0]?.slice(0, 10);
+        if (requestsRemaining && todaysDate) {
+          const rateLimitInt = parseInt(requestsRemaining);
+          await ctx.prisma.dailyRateLimit.upsert({
+            where: {
+              date: todaysDate
+            },
+            update: {
+              count: rateLimitInt
+            },
+            create: {
+              date: todaysDate,
+              count: rateLimitInt
+            }
+          })
+        }
 
         //api will return a message if there's an error
         if (json.message) {
@@ -92,6 +111,9 @@ export const raceRouter = router({
           }
         }))
 
+        //place to store errors we don't want to break the loop for
+        const skippedErrors: unknown[] = [];
+        
         //loop through json adding new races to database
         const races = await Promise.all(json.map(async (race: raceRes) => {
           const raceCourseId = coursesWithIds.find(course => course.name === race.course)?.id;
@@ -100,37 +122,42 @@ export const raceRouter = router({
           const raceTime = raceTimeWithTrailing00?.slice(0, -3)
           const raceDate = race.date.split(" ")[0]
           if (raceCourseId && raceTime && raceDate) {
-            const newRace = await ctx.prisma.race.upsert({
-              where: {
-                raceIdentifier: {
+            //try catch to prevent 1 race error breaking the whole endpoint
+            try {
+              const newRace = await ctx.prisma.race.upsert({
+                where: {
+                  raceIdentifier: {
+                    courseId: raceCourseId,
+                    time: raceTime,
+                    date: raceDate
+                  }
+                },
+                update: {
+                  time: raceTime,
+                  date: raceDate
+                },
+                create: {
                   courseId: raceCourseId,
                   time: raceTime,
                   date: raceDate
-                }
-              },
-              update: {
-                time: raceTime,
-                date: raceDate
-              },
-              create: {
-                courseId: raceCourseId,
-                time: raceTime,
-                date: raceDate
-              },
-              include: {
-                course: {
-                  select: {
-                    name: true
+                },
+                include: {
+                  course: {
+                    select: {
+                      name: true
+                    }
                   }
                 }
-              }
-            })
-            return newRace
+              })
+              return newRace
+            } catch (error) {
+              skippedErrors.push(error)
+            }
           }
           return null;
         }))
 
-        return {data: races, success: true, error: null, requestsRemaining}
+        return {data: races, success: true, error: skippedErrors.length > 0 ? skippedErrors : null, }
       } catch (err) {
         return {
           data: null,

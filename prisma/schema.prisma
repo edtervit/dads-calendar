@@ -77,6 +77,13 @@ model Session {
   @@index([userId])
 }
 
+model DailyRateLimit {
+  id        String   @id @default(cuid())
+  date String
+  count Int
+  @@unique([date])
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
