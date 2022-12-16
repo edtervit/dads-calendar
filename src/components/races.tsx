@@ -30,7 +30,9 @@ function Races({date}: props) {
   }
   );
 
-  const {data: rateLimitCount, refetch: refetchRateLimit} = trpc.rateLimit.getTodaysRateLimit.useQuery();
+  const {data: rateLimitCount, refetch: refetchRateLimit} = trpc.rateLimit.getTodaysRateLimit.useQuery(undefined, {
+    enabled: false,
+  });
 
   const {refetch: forceGetRaces} = trpc.race.getRaces.useQuery({date, forceGetRaces: true}, {
     enabled: false,
@@ -46,7 +48,7 @@ function Races({date}: props) {
     //refetch using og query to avoid having to handle the forceGetRaces query
     await refetchRaces()
     //refect the rate limit count
-    await refetchRateLimit()
+    if(isAdmin) await refetchRateLimit()
     setLoadingForce(false);
   }
 
@@ -54,8 +56,8 @@ function Races({date}: props) {
   useEffect(() => {
     refetchRaces()
     //refect the rate limit count
-    refetchRateLimit()
-  }, [date, refetchRaces, refetchRateLimit])
+    if(isAdmin) refetchRateLimit()
+  }, [date, refetchRaces, refetchRateLimit, isAdmin])
 
   //useEffect to log raceData
   useEffect(() => {

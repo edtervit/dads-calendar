@@ -15,7 +15,7 @@ function RaceItem({race, isAdmin}: props) {
         {race.time}
       </div>
       <StarRating raceRating={race.raceRating} winnerRating={race.winnerRating} raceId={race.id} isAdmin={isAdmin ?? false} />
-      <ImageManager race={race} isAdmin={isAdmin ?? false} />
+      {isAdmin && <ImageManager race={race} isAdmin={isAdmin ?? false} />}
     </div>
   )
 }
