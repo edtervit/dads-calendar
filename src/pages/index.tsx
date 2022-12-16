@@ -6,10 +6,9 @@ import {trpc} from "../utils/trpc";
 import Datepicker from "react-tailwindcss-datepicker";
 import {useState} from "react";
 import Races from "../components/races";
+import Link from "next/link";
 
 const Home: NextPage = () => {
-
-
   const [date, setDate] = useState<{startDate: string | Date | null; endDate: string | Date | null;} | null>({
     //formatting date to YYYY-MM-DD
     startDate: new Date().toISOString().split("T")[0]?.slice(0, 10) ?? null,
@@ -59,7 +58,7 @@ const Home: NextPage = () => {
 
 export default Home;
 
-const Auth: React.FC = () => {
+export const Auth: React.FC = () => {
   const {data: sessionData} = useSession();
 
   const {data: isAdmin} = trpc.auth.checkIfAdmin.useQuery(
@@ -68,18 +67,24 @@ const Auth: React.FC = () => {
   );
 
   return (
-    <div className="flex items-center justify-center gap-2">
-      <p className="text-center text-white text-xs">
-        {sessionData && <span>Logged in as {sessionData.user?.email} - </span>}
-        {isAdmin && <span> Hi Ned, full read and write access available.</span>}
-        {sessionData && !isAdmin && <span> You have read-only access.</span>}
-      </p>
-      <button
-        className={`${!sessionData ? 'rounded-full bg-white/10 px-10 py-3 mt-2 font-semibold text-white no-underline transition hover:bg-white/20' : 'rounded-full bg-white/10 px-4 py-1 font-semibold text-white no-underline transition hover:bg-white/20 text-xs'}`}
-        onClick={sessionData ? () => signOut() : () => signIn()}
-      >
-        {sessionData ? "Sign out" : "Sign in to get full access"}
-      </button>
-    </div>
+    <>
+      {isAdmin && <nav className="my-2">
+        <Link href={'/'} className='border white p-2' >Home</Link>
+        <Link href={'/users'} className='border white p-2' >Users</Link>
+      </nav>}
+      <div className="flex items-center justify-center gap-2">
+        <p className="text-center text-white text-xs">
+          {sessionData && <span>Logged in as {sessionData.user?.email} - </span>}
+          {isAdmin && <span> Hi Ned, full read and write access available.</span>}
+          {sessionData && !isAdmin && <span> You have read-only access.</span>}
+        </p>
+        <button
+          className={`${!sessionData ? 'rounded-full bg-white/10 px-10 py-3 mt-2 font-semibold text-white no-underline transition hover:bg-white/20' : 'rounded-full bg-white/10 px-4 py-1 font-semibold text-white no-underline transition hover:bg-white/20 text-xs'}`}
+          onClick={sessionData ? () => signOut() : () => signIn()}
+        >
+          {sessionData ? "Sign out" : "Sign in to get full access"}
+        </button>
+      </div>
+    </>
   );
 };
