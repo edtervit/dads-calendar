@@ -53,7 +53,7 @@ function ImageManager({race}: props) {
     setUploadingImages(true);
     //upload image to cloudinary
     const sigObject = await getSignatureForUpload()
-    const url = `http://api.cloudinary.com/v1_1/${env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`
+    const url = `https://api.cloudinary.com/v1_1/${env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`
 
     const formData = new FormData();
     formData.append('file', imageToUpload as File);
