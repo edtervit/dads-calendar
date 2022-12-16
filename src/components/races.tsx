@@ -1,6 +1,6 @@
-import type {Race} from '@prisma/client';
 import {useSession} from 'next-auth/react';
 import React, {useEffect, useState} from 'react'
+import type {RaceWithPhotosAndCourse} from '../types/race';
 import {groupRacesByCourseAndSortByTime} from '../utils/racesUtils';
 import {trpc} from '../utils/trpc';
 import RaceItem from './race';
@@ -12,19 +12,19 @@ interface props {
 
 interface formattedRaces {
   course: string;
-  races: Race[];
+  races: RaceWithPhotosAndCourse[];
 }
 
 function Races({date}: props) {
   const [loadingForce, setLoadingForce] = useState(false);
   const [formattedRaces, setFormattedRaces] = useState<formattedRaces[] | null>(null)
-  
+
   const {data: sessionData} = useSession();
   const {data: isAdmin} = trpc.auth.checkIfAdmin.useQuery(
     undefined, // no input
     {enabled: sessionData?.user !== undefined},
   );
-  
+
   const {data: raceData, isLoading, isError, refetch: refetchRaces} = trpc.race.getRaces.useQuery({
     date,
   }
@@ -55,7 +55,7 @@ function Races({date}: props) {
     refetchRaces()
     //refect the rate limit count
     refetchRateLimit()
-  }, [date, refetchRaces])
+  }, [date, refetchRaces, refetchRateLimit])
 
   //useEffect to log raceData
   useEffect(() => {
@@ -80,9 +80,9 @@ function Races({date}: props) {
             {formattedRaces.map((course: formattedRaces) => (
               <div className='border-white border p-4' key={course.course}>
                 <h3 className='mb-4 font-bold text-lg'>{course.course}</h3>
-                {course.races.map((race: Race) => (
+                {course.races.map((race: RaceWithPhotosAndCourse) => (
                   <div key={race.time + race.courseId}>
-                    <RaceItem race={race} isAdmin={isAdmin ?? false}/>
+                    <RaceItem race={race} isAdmin={isAdmin ?? false} />
                   </div>
                 ))}
               </div>

@@ -21,9 +21,9 @@ export const serverSchema = z.object({
   ),
   EMAIL_SERVER: z.string(),
   EMAIL_FROM: z.string(),
-  CLOUDINARY_CLOUD_NAME: z.string(),
-  CLOUDINARY_API_KEY: z.string(),
   CLOUDINARY_SECRET_API_KEY: z.string(),
+  CLOUDINARY_API_KEY: z.string(),
+  CLOUDINARY_CLOUD_NAME: z.string(),
   //comma seperate list of emails e.g ADMIN_EMAIL: "email1, email2"
   ADMIN_EMAIL: z.string(),
   RAPID_API_KEY: z.string(),
@@ -35,7 +35,8 @@ export const serverSchema = z.object({
  * To expose them to the client, prefix them with `NEXT_PUBLIC_`.
  */
 export const clientSchema = z.object({
-  // NEXT_PUBLIC_CLIENTVAR: z.string(),
+  NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: z.string(),
+  NEXT_PUBLIC_CLOUDINARY_API_KEY: z.string(),
 });
 
 /**
@@ -46,4 +47,6 @@ export const clientSchema = z.object({
  */
 export const clientEnv = {
   // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
+  NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  NEXT_PUBLIC_CLOUDINARY_API_KEY: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
 };

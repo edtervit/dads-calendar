@@ -1,6 +1,6 @@
 import {z} from "zod";
 
-import {router, publicProcedure, protectedProcedure} from "../trpc";
+import {router, publicProcedure, protectedProcedure, adminProcedure} from "../trpc";
 import {env} from "../../../env/server.mjs";
 
 export const raceRouter = router({
@@ -24,6 +24,12 @@ export const raceRouter = router({
           course: {
             select: {
               name: true
+            }
+          },
+          photo: {
+            select: {
+              url: true,
+              cloudinaryId: true
             }
           }
         }
@@ -166,7 +172,7 @@ export const raceRouter = router({
         }
       }
     }),
-  updateRating: protectedProcedure
+  updateRating: adminProcedure
     .input(z.object({
       raceId: z.number(),
       rating: z.number().nullable(),
@@ -174,10 +180,6 @@ export const raceRouter = router({
     }))
     .mutation(async ({ctx, input}) => {
 
-      if (ctx.session.user.email && !env.ADMIN_EMAIL.split(", ").includes(ctx.session.user.email)) return {
-        success: false,
-        error: ['Only admins can update ratings.']
-      }
       try {
         if (input.type === 'winner') {
           await ctx.prisma.race.update({

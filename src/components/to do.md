@@ -1,3 +1,3 @@
 to do 
 
-add image uploads
+mobile friendly 

@@ -39,12 +39,13 @@ model Race {
 }
 
 model Photo {
-  id        Int      @id @default(autoincrement())
-  raceId    Int      @unique
-  url       String
-  Race      Race     @relation(fields: [raceId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  raceId       Int      @unique
+  cloudinaryId String   @unique
+  url          String
+  Race         Race     @relation(fields: [raceId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 // Necessary for Next auth
@@ -78,9 +79,10 @@ model Session {
 }
 
 model DailyRateLimit {
-  id        String   @id @default(cuid())
-  date String
+  id    String @id @default(cuid())
+  date  String
   count Int
+
   @@unique([date])
 }
 

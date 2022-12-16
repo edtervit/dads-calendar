@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import {trpc} from '../utils/trpc';
 import LoadingSpinner from './resuable/loadingSpinner';
 
@@ -89,7 +89,14 @@ function StarRating({raceRating, winnerRating, raceId, isAdmin}: props) {
     setSavingWinner(false);
   }
 
-  //if user isn't an admin, return a read only star rating
+  //useEffect to watch enableEdit and when it's true, prevent page scroll
+  useEffect(() => {
+    if (enableEdit) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [enableEdit])
 
   return (
     isLoading ? <div className='flex justify-center'><LoadingSpinner /></div> : (

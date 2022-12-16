@@ -1,7 +1,8 @@
-import type {Race} from "@prisma/client";
+import type { RaceWithPhotosAndCourse } from "../types/race"; 
 
-export const groupRacesByCourseAndSortByTime = (raceData: ((Race & {course: {name: string;};}) | null)[]) => {
-  const groupedRaces: {course: string, races: Race[]}[] = [];
+
+export const groupRacesByCourseAndSortByTime = (raceData: RaceWithPhotosAndCourse[]) => {
+  const groupedRaces: {course: string, races: RaceWithPhotosAndCourse[]}[] = [];
   raceData.forEach(race => {
     //if the race is somehow null, just skip it.
     if (!race) return;
