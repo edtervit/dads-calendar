@@ -4,6 +4,9 @@ import {Dialog} from '@headlessui/react'
 import {trpc} from '../utils/trpc';
 import type {RaceWithPhotosAndCourse} from '../types/race';
 import {env} from '../env/client.mjs';
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
 interface props {
   race: RaceWithPhotosAndCourse;
@@ -17,6 +20,7 @@ function ImageManager({race}: props) {
   const [tempImage, setTempImageData] = useState<{url: string, cloudinaryId: string} | null>(null)
   const [deletedImage, setDeletedImage] = useState(false)
   const [deletingImage, setDeletingImage] = useState(false)
+  const [showImageLightbox, setShowImageLightbox] = useState(false)
 
   const [imageToUpload, setImageToUpload] = useState<File | null>(null)
 
@@ -123,7 +127,23 @@ function ImageManager({race}: props) {
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             <Dialog.Panel className="w-full h-full transform overflow-hidden rounded-2xl bg-black/95 p-6 shadow-xl transition-all flex justify-center items-center flex-col">
               <button onClick={() => setShowViewer((false))} className='absolute top-5 right-10 text-white text-3xl cursor-pointer border-white border px-2 hover:scale-110'>X</button>
-              <Image src={race?.photo?.url ?? tempImage?.url ?? ''} width={500} height={900} alt='uknown' />
+              <Image src={race?.photo?.url ?? tempImage?.url ?? ''} width={500} height={900} alt='uknown' className='cursor-pointer' onClick={() => setShowImageLightbox(true)} />
+              <Lightbox
+                open={showImageLightbox}
+                close={() => setShowImageLightbox(false)}
+                plugins={[Zoom]}
+                render={{buttonPrev: () => null, buttonNext: () => null}}
+                carousel={{finite: true}}
+                zoom={
+                  {
+                    scrollToZoom: true,
+                    maxZoomPixelRatio: 10,
+                    zoomInMultiplier: 1.2
+                }}
+                slides={[
+                  {src: race?.photo?.url ?? tempImage?.url ?? ''},
+                ]}
+              />
               <div>
                 <button className='text-white bg-red-900 rounded-sm p-2 cursor-pointer hover:scale-110 transition-transform mt-2' onClick={() => !deletingImage && handleDeleteImage()}>{deletingImage ? "Deleting.." : "Delete"}</button>
               </div>
