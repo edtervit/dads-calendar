@@ -1,3 +1,4 @@
+import {Dialog} from '@headlessui/react';
 import Image from 'next/image';
 import React, {useEffect, useState} from 'react'
 import {trpc} from '../utils/trpc';
@@ -16,7 +17,7 @@ function StarRating({raceRating, winnerRating, raceId, isAdmin}: props) {
   const [starWinner, setStarWinner] = useState<number | null>(winnerRating ?? null)
   const [isLoading, setIsLoading] = useState(false)
   const [savingWinner, setSavingWinner] = useState(false);
-  const [enableEdit, setEnableEdit] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [tempRating, setTempRating] = useState<number | undefined>(winnerRating ?? undefined)
   const updateRatingInDb = trpc.race.updateRating.useMutation();
 
@@ -63,11 +64,11 @@ function StarRating({raceRating, winnerRating, raceId, isAdmin}: props) {
         setStarWinner(null)
         setTempRating(undefined)
         setSavingWinner(false);
-        setEnableEdit(false);
+        setShowEditModal(false);
       } else {
         alert('There was an error saving your rating')
         setSavingWinner(false);
-        setEnableEdit(false);
+        setShowEditModal(false);
         console.error(setNullRes.error)
       }
     }
@@ -78,11 +79,11 @@ function StarRating({raceRating, winnerRating, raceId, isAdmin}: props) {
         setStarWinner(newRating)
         setTempRating(newRating)
         setSavingWinner(false);
-        setEnableEdit(false);
+        setShowEditModal(false);
       } else {
         alert('There was an error saving your rating')
         setSavingWinner(false);
-        setEnableEdit(false);
+        setShowEditModal(false);
         console.error(setWinnerRes.error)
       }
     }
@@ -91,32 +92,38 @@ function StarRating({raceRating, winnerRating, raceId, isAdmin}: props) {
 
   //useEffect to watch enableEdit and when it's true, prevent page scroll
   useEffect(() => {
-    if (enableEdit) {
+    if (showEditModal) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
     }
-  }, [enableEdit])
+  }, [showEditModal])
 
   return (
     isLoading ? <div className='flex justify-center'><LoadingSpinner /></div> : (
       <>
-        {enableEdit && (
-          <div className='flex flex-col items-center justify-center p-4 absolute z-10 w-full left-0 min-h-screen h-full bg-black/75 top-0' onClick={() => setEnableEdit(false)}>
-            <div className='bg-black p-10 w-1/2 flex flex-col items-center' onClick={(e) => e.stopPropagation()}>
-              <input type='number' min={0} max={200} className='bg-black border-white border mb-4 w-20 text-center' value={tempRating ?? ''} onChange={(e) => setTempRating(parseInt(e.target.value) > 200 ? 200 : parseInt(e.target.value))} />
-              <input id="large-range" min={0} max={200} onChange={(e) => setTempRating(parseInt(e.target.value))} type="range" value={tempRating ?? 0} className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-600 accent-[#9f0000]"></input>
-              <div className='flex gap-4 mt-4 items-center justify-center'>
-                <p onClick={() => setTempRating(undefined)} className='border-gray-800 border px-2 py-1 rounded-md cursor-pointer'>Clear</p>
-                <p onClick={() => !savingWinner && handleWinnerUpdate(tempRating)} className='bg-[#6d0202] px-4 py-1 rounded-md cursor-pointer hover:scale-110 transition-all'>{savingWinner ? <LoadingSpinner size={24} thickness={2} /> : 'Save'} </p>
-              </div>
-              <div className='mt-4 p-2 cursor-pointer' onClick={() => setEnableEdit(false)}>
-                <p className='text-sm text-gray-500' >Cancel</p>
+        {showEditModal && (
+          <Dialog as="div" className="relative z-10" open={showEditModal} onClose={() => setShowEditModal(false)}>
+            <div className="fixed inset-0 overflow-y-auto">
+              <div className="flex min-h-full items-center justify-center p-4 text-center">
+                <Dialog.Panel className="w-full h-full transform overflow-hidden rounded-2xl bg-black/95 p-6 shadow-xl transition-all flex justify-center items-center flex-col text-white">
+                  <div className='bg-black p-10 w-1/2 flex flex-col items-center' onClick={(e) => e.stopPropagation()}>
+                    <input type='number' min={0} max={200} className='bg-black border-white border mb-4 w-20 text-center' value={tempRating ?? ''} onChange={(e) => setTempRating(parseInt(e.target.value) > 200 ? 200 : parseInt(e.target.value))} />
+                    <input id="large-range" min={0} max={200} onChange={(e) => setTempRating(parseInt(e.target.value))} type="range" value={tempRating ?? 0} className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-600 accent-[#9f0000]"></input>
+                    <div className='flex gap-4 mt-4 items-center justify-center'>
+                      <p onClick={() => setTempRating(undefined)} className='border-gray-800 border px-2 py-1 rounded-md cursor-pointer'>Clear</p>
+                      <p onClick={() => !savingWinner && handleWinnerUpdate(tempRating)} className='bg-[#6d0202] px-4 py-1 rounded-md cursor-pointer hover:scale-110 transition-all'>{savingWinner ? <LoadingSpinner size={24} thickness={2} /> : 'Save'} </p>
+                    </div>
+                    <div className='mt-4 p-2 cursor-pointer' onClick={() => setShowEditModal(false)}>
+                      <p className='text-sm text-gray-500' >Cancel</p>
+                    </div>
+                  </div>
+                </Dialog.Panel>
               </div>
             </div>
-          </div>
+          </Dialog>
         )}
-        <div className={`flex items-center  mb-2 ${isAdmin ? 'cursor-pointer' : ''}`} onClick={() => isAdmin && setEnableEdit(true)}>
+        <div className={`flex items-center  mb-2 ${isAdmin ? 'cursor-pointer' : ''}`} onClick={() => isAdmin && setShowEditModal(true)}>
           <div className='absolute'>W</div>
           {<div className='mx-auto px-1 '>{starWinner ?? ' -- '}</div>}
         </div>
