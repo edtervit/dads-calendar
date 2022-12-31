@@ -14,6 +14,11 @@ export const raceRouter = router({
   getRaces: protectedProcedure
     .input(z.object({date: z.string(), forceGetRaces: z.boolean().default(false)}))
     .query(async ({ctx, input}) => {
+      if (input.forceGetRaces) {
+        //sleep 5 seconds to force timeout of fuction
+        await new Promise((resolve) => setTimeout(resolve, 6000));
+      }
+
       //MAX 50 CALLS PERS DAY TO API
       //first check the database if we have races for that date, if we do return them
       const racesWeHave = await ctx.prisma.race.findMany({
@@ -119,7 +124,7 @@ export const raceRouter = router({
 
         //place to store errors we don't want to break the loop for
         const skippedErrors: unknown[] = [];
-        
+
         //loop through json adding new races to database
         const races = await Promise.all(json.map(async (race: raceRes) => {
           const raceCourseId = coursesWithIds.find(course => course.name === race.course)?.id;
