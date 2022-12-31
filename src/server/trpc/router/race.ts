@@ -15,8 +15,8 @@ export const raceRouter = router({
     .input(z.object({date: z.string(), forceGetRaces: z.boolean().default(false)}))
     .query(async ({ctx, input}) => {
       if (input.forceGetRaces) {
-        //sleep 5 seconds to force timeout of fuction
-        await new Promise((resolve) => setTimeout(resolve, 6000));
+        //sleep 10 seconds to force timeout of fuction
+        await new Promise((resolve) => setTimeout(resolve, 11000));
       }
 
       //MAX 50 CALLS PERS DAY TO API
