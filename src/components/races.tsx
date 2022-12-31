@@ -34,7 +34,7 @@ function Races({date}: props) {
     enabled: false,
   });
 
-  const {refetch: forceGetRaces} = trpc.race.getRaces.useQuery({date, forceGetRaces: true}, {
+  const {refetch: forceGetRaces, error: forceError} = trpc.race.getRaces.useQuery({date, forceGetRaces: true}, {
     enabled: false,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -44,7 +44,9 @@ function Races({date}: props) {
   const handleForceGetRaces = async () => {
     setLoadingForce(true);
     //call endpoint to force the new races to be added to the db
-    await forceGetRaces()
+    const res = await forceGetRaces()
+    console.log('forceRes: ', res)
+    console.log('forceError: ', forceError)
     //refetch using og query to avoid having to handle the forceGetRaces query
     await refetchRaces()
     //refect the rate limit count
