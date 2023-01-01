@@ -16,7 +16,7 @@ const Users: NextPage = () => {
     if (isError) {
       router.push("/");
     }
-  }, [isError])
+  }, [isError, router])
 
   return (
     <>

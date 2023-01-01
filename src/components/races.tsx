@@ -30,11 +30,15 @@ function Races({date}: props) {
   }
   );
 
+  const {mutateAsync: getRawJson} = trpc.race.getRawRaceData.useMutation({});
+  
+  const {mutateAsync: handleRawJson} = trpc.race.handleRawJson.useMutation({});
+
   const {data: rateLimitCount, refetch: refetchRateLimit} = trpc.rateLimit.getTodaysRateLimit.useQuery(undefined, {
     enabled: false,
   });
 
-  const {refetch: forceGetRaces, error: forceError} = trpc.race.getRaces.useQuery({date, forceGetRaces: true}, {
+  const {refetch: forceGetRaces} = trpc.race.getRaces.useQuery({date, forceGetRaces: true}, {
     enabled: false,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -45,12 +49,20 @@ function Races({date}: props) {
     setLoadingForce(true);
     //call endpoint to force the new races to be added to the db
     const res = await forceGetRaces()
-    console.log('forceRes: ', res)
-    console.log('forceError: ', forceError)
+    
+    //if getting the races fails due to timeout, run the two endpoints that split the function in half to avoid timeouts
+    if(res.error?.message.includes(`Unexpected token 'A', "An error o"... is not valid JSON`)){
+      console.error('Endpoint timed out, running split endpoints')
+      const getRawRes = await getRawJson(date)
+      if(getRawRes.success){
+        await handleRawJson(date)
+      }
+    }
+    
     //refetch using og query to avoid having to handle the forceGetRaces query
     await refetchRaces()
     //refect the rate limit count
-    if(isAdmin) await refetchRateLimit()
+    if (isAdmin) await refetchRateLimit()
     setLoadingForce(false);
   }
 
@@ -58,7 +70,7 @@ function Races({date}: props) {
   useEffect(() => {
     refetchRaces()
     //refect the rate limit count
-    if(isAdmin) refetchRateLimit()
+    if (isAdmin) refetchRateLimit()
   }, [date, refetchRaces, refetchRateLimit, isAdmin])
 
   //useEffect to log raceData
@@ -80,7 +92,7 @@ function Races({date}: props) {
         <>
           {isAdmin && <div className='bg-white/10 rounded-sm p-2 cursor-pointer hover:scale-110 transition-transform' onClick={() => !loadingForce && handleForceGetRaces()}> {loadingForce ? 'Loading...' : 'Force Get Races'}</div>}
           {rateLimitCount && <p className='text-sm'>Race requests remaining today: {rateLimitCount}</p>}
-          <div className='text-center flex gap-4 mt-4'>
+          <div className='text-center flex gap-4 mt-4 flex-wrap justify-center'>
             {formattedRaces.map((course: formattedRaces) => (
               <div className='border-white border p-4' key={course.course}>
                 <h3 className='mb-4 font-bold text-lg'>{course.course}</h3>

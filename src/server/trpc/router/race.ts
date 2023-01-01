@@ -14,11 +14,6 @@ export const raceRouter = router({
   getRaces: protectedProcedure
     .input(z.object({date: z.string(), forceGetRaces: z.boolean().default(false)}))
     .query(async ({ctx, input}) => {
-      if (input.forceGetRaces) {
-        //sleep 10 seconds to force timeout of fuction
-        await new Promise((resolve) => setTimeout(resolve, 11000));
-      }
-
       //MAX 50 CALLS PERS DAY TO API
       //first check the database if we have races for that date, if we do return them
       const racesWeHave = await ctx.prisma.race.findMany({
@@ -212,5 +207,147 @@ export const raceRouter = router({
       }
 
 
+    }),
+    //Below two enpoints are needed because of the 5 second timeout limit on serverless functions with free vercel account
+    // below two endpoints (getRawRaceData & handleRawJson) split the getRaces endpoint into two parts because the third party api takes 4.3 seconds to respond on large meetings
+  getRawRaceData: adminProcedure
+    .input(
+      z.string(),
+    )
+    .mutation(async ({ctx, input}) => {
+      const options = {
+        method: 'GET',
+        headers: {
+          'X-RapidAPI-Key': env.RAPID_API_KEY,
+          'X-RapidAPI-Host': 'horse-racing.p.rapidapi.com'
+        }
+      };
+
+      try {
+        const response = await fetch(`https://horse-racing.p.rapidapi.com/racecards?date=${input}`, options);
+        const json = await response.json();
+        const stringJson = JSON.stringify(json);
+        //save json + date to db to use later 
+        await ctx.prisma.rawJson.upsert({
+          where: {
+            date: input
+          },
+          update: {
+            json: stringJson
+          },
+          create: {
+            date: input,
+            json: stringJson
+          }
+        })
+        return {success: true, error: null}
+
+      } catch (error) {
+        return {success: false, error: [error, 'Error']}
+      }
+    }),
+  //only call this endpoint after a successful getRawRacesJson request
+  handleRawJson: adminProcedure
+    .input(
+      z.string(),
+    )
+    .mutation(async ({ctx, input}) => {
+      try {
+        const jsonStr = await ctx.prisma.rawJson.findUnique({
+          where: {
+            date: input
+          },
+          select: {
+            json: true
+          }
+        })
+        if(!jsonStr || !jsonStr.json) return {success: false, error: ['No json found for this date']}
+        
+        const json = JSON.parse(jsonStr.json)
+        
+        
+        interface raceRes {
+          date: string
+          course: string
+        }
+
+        //loop through json adding new course.name to an array
+        const courseArray: string[] = []
+        json.forEach((race: raceRes) => {
+          if (!courseArray.includes(race.course)) courseArray.push(race.course)
+        })
+        //add new courses to database and get id, if they already exist get id
+        const coursesWithIds: {name: string, id: number}[] = await Promise.all(courseArray.map(async (course: string) => {
+          //check if course exists in database and get id, if not create it and get id
+          const courseId = await ctx.prisma.course.findUnique({
+            where: {
+              name: course
+            },
+            select: {
+              id: true
+            }
+          })
+          if (courseId) return {name: course, id: courseId.id}
+          else {
+            const newCourse = await ctx.prisma.course.create({
+              data: {
+                name: course
+              }
+            })
+            return {name: course, id: newCourse.id}
+          }
+        }))
+
+        //place to store errors we don't want to break the loop for
+        const skippedErrors: unknown[] = [];
+
+        //loop through json adding new races to database
+        const races = await Promise.all(json.map(async (race: raceRes) => {
+          const raceCourseId = coursesWithIds.find(course => course.name === race.course)?.id;
+          const raceTimeWithTrailing00 = race.date.split(" ")[1]
+          //remove trailing 00 from time
+          const raceTime = raceTimeWithTrailing00?.slice(0, -3)
+          const raceDate = race.date.split(" ")[0]
+          if (raceCourseId && raceTime && raceDate) {
+            //try catch to prevent 1 race error breaking the whole endpoint
+            try {
+              const newRace = await ctx.prisma.race.upsert({
+                where: {
+                  raceIdentifier: {
+                    courseId: raceCourseId,
+                    time: raceTime,
+                    date: raceDate
+                  }
+                },
+                update: {
+                  time: raceTime,
+                  date: raceDate
+                },
+                create: {
+                  courseId: raceCourseId,
+                  time: raceTime,
+                  date: raceDate
+                },
+                include: {
+                  course: {
+                    select: {
+                      name: true
+                    }
+                  }
+                }
+              })
+              return newRace
+            } catch (error) {
+              skippedErrors.push(error)
+            }
+          }
+          return null;
+        }))
+
+        return {data: races, success: true, error: skippedErrors.length > 0 ? skippedErrors : null, }
+        
+      } catch (error) {
+        return {success: false, error: [error, 'Error reading json from DB']}
+      }
     }),
 });
