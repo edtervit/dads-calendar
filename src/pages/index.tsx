@@ -4,9 +4,10 @@ import {signIn, signOut, useSession} from "next-auth/react";
 
 import {trpc} from "../utils/trpc";
 import Datepicker from "react-tailwindcss-datepicker";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import Races from "../components/races";
 import Link from "next/link";
+import LoadingSpinner from "../components/resuable/loadingSpinner";
 
 const Home: NextPage = () => {
   const [date, setDate] = useState<{startDate: string | Date | null; endDate: string | Date | null;} | null>({
@@ -59,7 +60,13 @@ const Home: NextPage = () => {
 export default Home;
 
 export const Auth: React.FC = () => {
-  const {data: sessionData} = useSession();
+  const {data: sessionData, status: autoLoginStatus} = useSession();
+  
+  // useEffect to console log any change to autologinstatus
+  useEffect(() => {
+    console.log(autoLoginStatus)
+  }, [autoLoginStatus])
+    
 
   const {data: isAdmin} = trpc.auth.checkIfAdmin.useQuery(
     undefined, // no input
@@ -78,12 +85,13 @@ export const Auth: React.FC = () => {
           {isAdmin && <span> Hi Ned, full read and write access available.</span>}
           {sessionData && !isAdmin && <span> You have read-only access.</span>}
         </p>
-        <button
+        {autoLoginStatus !== 'loading' && <button
           className={`${!sessionData ? 'rounded-full bg-white/10 px-10 py-3 mt-2 font-semibold text-white no-underline transition hover:bg-white/20' : 'rounded-full bg-white/10 px-4 py-1 font-semibold text-white no-underline transition hover:bg-white/20 text-xs'}`}
           onClick={sessionData ? () => signOut() : () => signIn()}
         >
           {sessionData ? "Sign out" : "Sign in to get full access"}
-        </button>
+        </button>}
+        {autoLoginStatus === 'loading' && <LoadingSpinner/> }
       </div>
     </>
   );
