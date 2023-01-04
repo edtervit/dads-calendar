@@ -91,7 +91,7 @@ function Races({date}: props) {
       {formattedRaces && !isLoading && !isError && (
         <>
           {isAdmin && <div className='bg-white/10 rounded-sm p-2 cursor-pointer hover:scale-110 transition-transform' onClick={() => !loadingForce && handleForceGetRaces()}> {loadingForce ? 'Loading...' : 'Force Get Races'}</div>}
-          {rateLimitCount && <p className='text-sm'>Race requests remaining today: {rateLimitCount}</p>}
+          {rateLimitCount !== null && rateLimitCount !== undefined && <p className='text-sm'>Race requests remaining today: {rateLimitCount}</p>}
           <div className='text-center flex gap-4 mt-4 flex-wrap justify-center'>
             {formattedRaces.map((course: formattedRaces) => (
               <div className='border-white border p-4' key={course.course}>

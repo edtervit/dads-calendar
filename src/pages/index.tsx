@@ -8,12 +8,13 @@ import {useEffect, useState} from "react";
 import Races from "../components/races";
 import Link from "next/link";
 import LoadingSpinner from "../components/resuable/loadingSpinner";
+import {DateTime} from "luxon";
 
 const Home: NextPage = () => {
   const [date, setDate] = useState<{startDate: string | Date | null; endDate: string | Date | null;} | null>({
     //formatting date to YYYY-MM-DD
-    startDate: new Date().toISOString().split("T")[0]?.slice(0, 10) ?? null,
-    endDate: new Date().toISOString().split("T")[0]?.slice(0, 10) ?? null,
+    startDate: DateTime.now().toFormat('yyyy-MM-dd'),
+    endDate: DateTime.now().toFormat('yyyy-MM-dd'),
   });
   const handleDateChange = (newValue: {startDate: string | Date | null; endDate: string | Date | null;} | null) => {
     if (!newValue) return;
@@ -22,7 +23,9 @@ const Home: NextPage = () => {
       alert("You can't select a date in the future")
       return;
     }
-    setDate(newValue);
+    const date = new Date(newValue.startDate as string)
+    const formattedDate = DateTime.fromISO(date.toISOString()).toFormat('yyyy-MM-dd')
+    setDate({startDate: formattedDate, endDate: formattedDate});
   }
   const {data: sessionData} = useSession();
 

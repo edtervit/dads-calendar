@@ -1,3 +1,3 @@
 to do 
 
-- mobile friendly 
+- mobile friendly image upload?
