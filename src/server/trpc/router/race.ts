@@ -152,6 +152,12 @@ export const raceRouter = router({
                     select: {
                       name: true
                     }
+                  },
+                  photo: {
+                    select: {
+                      url: true,
+                      cloudinaryId: true
+                    }
                   }
                 }
               })
@@ -332,6 +338,12 @@ export const raceRouter = router({
                   course: {
                     select: {
                       name: true
+                    }
+                  },
+                  photo: {
+                    select: {
+                      url: true,
+                      cloudinaryId: true
                     }
                   }
                 }
